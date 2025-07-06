@@ -1,6 +1,7 @@
 #include "graph.h"
+#include <climits>
 
-void Graph::Dijkstra(const std::string& start_id) {
+void Graph::Dijkstra(const std::string& start_id) { 
         if (node_map.find(start_id) == node_map.end()) {
             std::cout << "Unknown node " << start_id << std::endl;
             return;
@@ -10,12 +11,12 @@ void Graph::Dijkstra(const std::string& start_id) {
         Node* start_node = node_map[start_id];
 
         std::unordered_map<Node*, int> D;
+        
         for (const auto& pair : node_map) {
-            D[pair.second] = std::numeric_limits<int>::max();  // Все вершины изначально на "бесконечности"
+            D[pair.second] = INT_MAX;  //все вершины изначально на "бесконечности"
         }
         D[start_node] = 0;
 
-        // Массив для проверки посещённых вершин
         std::unordered_map<Node*, bool> A;
         for (const auto& pair : node_map) {
             A[pair.second] = false;  // Все вершины ещё не обработаны
@@ -38,27 +39,27 @@ void Graph::Dijkstra(const std::string& start_id) {
 
             A[v] = true;  // Помечаем вершину как обработанную
 
-            // Обрабатываем все рёбра, исходящие из текущей вершины
             for (Edge* edge : v->out_edges) {
                 Node* u = edge->to;
                 int W = edge->weight;
-
-                // Обновляем расстояние до соседей
-                D[u] = std::min(D[u], D[v] + W);
+                
+                D[u] = std::min(D[u], D[v] + W); 
+                if (D[u] < 0){
+                    D[u] = INT_MAX; //слабость в алгоритме. Если вершина B недостижима из A, а C достижима из B, то дистанция до C будет переопределена, как INT_MAX + что -то = чуть больше, чем INT_MIN. Для борьбы с этим добавлена доп.проверка
+                }
             }
         }
 
         // Выводим результат
-        for (const auto& pair : node_map) {
-            Node* node = pair.second;
-            int dist = D[node];
-            if (node->id == start_id){
-                continue;
-            } else if (dist == std::numeric_limits<int>::max()) {
-                std::cout << node->id << " INF" << std::endl;
-            } 
-            else {
-                std::cout << node->id << " " << dist << std::endl;
-            }
-        }
+        for (const auto& id : node_order) {
+    if (id == start_id) continue;
+
+    Node* node = node_map[id];
+    int dist = D[node];
+    if (dist == INT_MAX) {
+        std::cout << id << " INF" << std::endl; //для недостижимых вершин
+    } else {
+        std::cout << id << " " << dist << std::endl;
+    }
+}
     }

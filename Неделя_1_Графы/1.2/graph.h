@@ -8,8 +8,9 @@
 #include "edge.h"
 
 class Graph {
-private:
+private: 
     std::unordered_map<std::string, Node*> node_map;
+    std::vector<std::string> node_order; //для того, чтобы в Дейкстре вершины выводились в порядке их добавления в граф, я пришлось unordered_map менять на vector
 
     bool DfsCycleDetect(Node* node, std::unordered_set<Node*>& visited,
                         std::unordered_set<Node*>& rec_stack,
@@ -48,6 +49,7 @@ public:
     void AddNode(const std::string& id) {
         if (!node_map.count(id)) {
             node_map[id] = new Node(id);
+            node_order.push_back(id);  //сохраняем порядок добавления + если вершина уже была добавлена, применением повторного добавления ничего не меняет 
         }
     }
 
@@ -78,8 +80,7 @@ public:
 
         Node* target = node_map[id];
 
-        // Удалить все входящие рёбра
-        for (Edge* edge : target->in_edges) {
+        for (Edge* edge : target->in_edges) { //чистим все
             Node* from = edge->from;
             auto& out_vec = from->out_edges;
             for (auto it = out_vec.begin(); it != out_vec.end(); ++it) {
