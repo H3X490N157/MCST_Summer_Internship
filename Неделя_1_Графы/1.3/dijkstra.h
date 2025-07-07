@@ -1,4 +1,5 @@
 #include "graph.h"
+#pragma once
 
 void Graph::Dijkstra(const std::string& start_id) {
         if (node_map.find(start_id) == node_map.end()) {

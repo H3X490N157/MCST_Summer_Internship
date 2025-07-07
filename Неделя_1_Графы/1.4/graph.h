@@ -4,8 +4,11 @@
 #include <queue>
 #include <iostream>
 #include <limits>
+#include <climits>
 
 #include "edge.h"
+
+#pragma once
 
 class Graph {
 private:
@@ -168,4 +171,8 @@ public:
     }
 
     void Dijkstra (const std::string& start_id);
+
+    int FordFulkerson(const std::string& source_id, const std::string& sink_id); 
+
+    void Tarjan(const std::string& start_id);
 };
