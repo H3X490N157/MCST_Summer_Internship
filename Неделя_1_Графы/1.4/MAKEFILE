@@ -7,7 +7,7 @@ CXXFLAGS = -std=c++11 -Wall -Wextra -O2
 all: build
 build: $(EXE)
 
-$(EXE): $(SRC) edge.h node.h graph.h dijkstra.h fordfulkerson.h
+$(EXE): $(SRC) edge.h node.h graph.h dijkstra.h fordfulkerson.h tarjan.h
 	$(CXX) $(CXXFLAGS) $(SRC) -o $(EXE)
 
 test: $(EXE)

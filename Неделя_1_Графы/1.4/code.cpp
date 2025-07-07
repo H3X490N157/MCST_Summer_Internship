@@ -1,5 +1,6 @@
 #include "dijkstra.h"
 #include "fordfulkerson.h"
+#include "tarjan.h"
 #include <sstream>
 
 //предварительные тесты
@@ -36,10 +37,14 @@ int main() {
             std::string id;
             ss >> id;
             graph.Dijkstra(id);
-        } else if (cmd == "MAX_FLOW"){
-            std::string a, b;
-            ss >> a >> b;
+        } else if (cmd == "MAX"){
+            std::string skip, a, b;
+            ss >> skip >> a >> b;
             std::cout << graph.FordFulkerson(a, b);
+        } else if (cmd == "TARJAN"){
+            std::string a;
+            ss >> a;
+            graph.Tarjan(a);
         }
 
     }
