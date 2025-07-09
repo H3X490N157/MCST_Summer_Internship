@@ -11,40 +11,38 @@ private:
     bool DfsCycleDetect(Node* node, std::unordered_set<Node*>& visited,
                         std::unordered_set<Node*>& rec_stack,
                         std::string& loop_from, std::string& loop_to) {
-        visited.insert(node);
-        rec_stack.insert(node);
-
-        for (Edge* edge : node->out_edges) {
+        visited.insert(node); //помечаем вершину, как посещённую
+        rec_stack.insert(node); //добавляем в стек для 
+        for (Edge* edge : node->out_edges) { //проверяем все вершины, в которые можем попасть из текущей
             Node* neighbor = edge->to;
-            if (rec_stack.count(neighbor)) {
-                loop_from = node->id;
+            if (rec_stack.count(neighbor)) { //если её вершина-сосед уже в стеке, значит, есть цикл
+                loop_from = node->id; //изменяем переменные начала конца и цикла
                 loop_to = neighbor->id;
                 return true;
             } else if (!visited.count(neighbor)) {
-                if (DfsCycleDetect(neighbor, visited, rec_stack, loop_from, loop_to))
+                if (DfsCycleDetect(neighbor, visited, rec_stack, loop_from, loop_to))//цикла нет - ищем дальше
                     return true;
             }
         }
-
-        rec_stack.erase(node);
+        rec_stack.erase(node); //чистим стек от текущей вершины,
         return false;
     }
 
     void DfsPostOrder(Node* node, std::unordered_set<Node*>& visited,
-                      std::vector<std::string>& result) {
+                      std::vector<std::string>& result) { //метод для пронумерования с вершин с помощью пост-порядка (пост-ордера)
         visited.insert(node);
         for (Edge* edge : node->out_edges) {
             if (!visited.count(edge->to)) {
-                DfsPostOrder(edge->to, visited, result);
+                DfsPostOrder(edge->to, visited, result); //буквально рекурсивный вызов DFS для пронумерования
             }
         }
-        result.push_back(node->id);
+        result.push_back(node->id); //добавление в вектор с результатом полученного порядка
     }
 
 public:
     void AddNode(const std::string& id) {
         if (!node_map.count(id)) {
-            node_map[id] = new Node(id);
+            node_map[id] = new Node(id); 
         }
     }
 
@@ -74,9 +72,7 @@ public:
         }
 
         Node* target = node_map[id];
-
-        // Удалить все входящие рёбра
-        for (Edge* edge : target->in_edges) {
+        for (Edge* edge : target->in_edges) {//удаление всех входящих рёбер перед удаление самой вершины 
             Node* from = edge->from;
             auto& out_vec = from->out_edges;
             for (auto it = out_vec.begin(); it != out_vec.end(); ++it) {
@@ -88,8 +84,7 @@ public:
             delete edge;
         }
 
-        // Удалить все исходящие рёбра
-        for (Edge* edge : target->out_edges) {
+        for (Edge* edge : target->out_edges) {//теперь удаление всех исходящих рёбер
             Node* to = edge->to;
             auto& in_vec = to->in_edges;
             for (auto it = in_vec.begin(); it != in_vec.end(); ++it) {
@@ -139,10 +134,12 @@ public:
         }
     }
 
-    void ProNumbering(const std::string& start_id) {
+    std::vector<std::string> ProNumbering(const std::string& start_id) {
+        std::vector<std::string> post_order;
+
         if (!node_map.count(start_id)) {
             std::cout << "Unknown node " << start_id << std::endl;
-            return;
+            return post_order;
         }
 
         std::unordered_set<Node*> visited, rec_stack;
@@ -153,14 +150,8 @@ public:
         }
 
         visited.clear();
-        std::vector<std::string> post_order;
-        DfsPostOrder(node_map[start_id], visited, post_order);
 
-        for (size_t i = 0; i < post_order.size(); ++i) {
-            std::cout << post_order[post_order.size() - i - 1];
-            if (i + 1 < post_order.size())
-                std::cout << " ";
-        }
-        std::cout << std::endl;
+        DfsPostOrder(node_map[start_id], visited, post_order);
+        return post_order; 
     }
 };

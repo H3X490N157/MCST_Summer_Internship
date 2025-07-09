@@ -17,34 +17,32 @@ private:
     bool DfsCycleDetect(Node* node, std::unordered_set<Node*>& visited,
                         std::unordered_set<Node*>& rec_stack,
                         std::string& loop_from, std::string& loop_to) {
-        visited.insert(node);
-        rec_stack.insert(node);
-
-        for (Edge* edge : node->out_edges) {
+        visited.insert(node); //помечаем вершину, как посещённую
+        rec_stack.insert(node); //добавляем в стек для 
+        for (Edge* edge : node->out_edges) { //проверяем все вершины, в которые можем попасть из текущей
             Node* neighbor = edge->to;
-            if (rec_stack.count(neighbor)) {
-                loop_from = node->id;
+            if (rec_stack.count(neighbor)) { //если её вершина-сосед уже в стеке, значит, есть цикл
+                loop_from = node->id; //изменяем переменные начала конца и цикла
                 loop_to = neighbor->id;
                 return true;
             } else if (!visited.count(neighbor)) {
-                if (DfsCycleDetect(neighbor, visited, rec_stack, loop_from, loop_to))
+                if (DfsCycleDetect(neighbor, visited, rec_stack, loop_from, loop_to))//цикла нет - ищем дальше
                     return true;
             }
         }
-
-        rec_stack.erase(node);
+        rec_stack.erase(node); //чистим стек от текущей вершины,
         return false;
     }
 
     void DfsPostOrder(Node* node, std::unordered_set<Node*>& visited,
-                      std::vector<std::string>& result) {
+                      std::vector<std::string>& result) { //метод для пронумерования с вершин с помощью пост-порядка (пост-ордера)
         visited.insert(node);
         for (Edge* edge : node->out_edges) {
             if (!visited.count(edge->to)) {
-                DfsPostOrder(edge->to, visited, result);
+                DfsPostOrder(edge->to, visited, result); //буквально рекурсивный вызов DFS для пронумерования
             }
         }
-        result.push_back(node->id);
+        result.push_back(node->id); //добавление в вектор с результатом полученного порядка
     }
 
 public:

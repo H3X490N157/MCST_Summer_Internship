@@ -31,8 +31,15 @@ int main() {
             }
         } else if (cmd == "PRO_NUMBERING") {
             std::string id;
-            ss >> id;
-            graph.ProNumbering(id);
+            input >> id;
+            std::vector<std::string> post_order = graph.ProNumbering(id);
+            for (size_t i = 0; i < post_order.size(); ++i) {
+                std::cout << post_order[post_order.size() - i - 1];
+                if (i + 1 < post_order.size()) {
+                    std::cout << " ";
+                }
+            }
+            std::cout << std::endl;
         } else if (cmd == "DIJKSTRA"){
             std::string id;
             ss >> id;
