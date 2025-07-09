@@ -1,21 +1,24 @@
-SRC = code.cpp
-OBJ = code.o
-EXE = program
-
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -Wextra -O2
+CXXFLAGS = -std=c++11 -Wall -Wextra -O1 -g -fsanitize=address,undefined
+
+SRC = code.cpp
+OBJ = $(SRC:.cpp=.o)
+RUN = program
+
 all: build
-build: $(EXE)
 
-$(EXE): $(SRC) edge.h node.h graph.h dijkstra.h fordfulkerson.h tarjan.h
-	$(CXX) $(CXXFLAGS) $(SRC) -o $(EXE)
+build: $(RUN)
 
-test: $(EXE)
-	@echo "Running tests..."
-	@# Здесь будут тесты, например: ./program < input.txt
-	@echo "No tests defined yet."
+$(RUN): $(OBJ)
+	$(CXX) $(CXXFLAGS) $(OBJ) -o $(RUN)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+test: $(RUN)
+	./$(RUN) < test_input.txt
 
 clean:
-	rm -f $(EXE) *.o
+	rm -f $(RUN) *.o
 
 .PHONY: all build test clean

@@ -45,7 +45,7 @@ private:
 public:
     void AddNode(const std::string& id) {
         if (!node_map.count(id)) {
-            node_map[id] = new Node(id);
+            node_map[id] = new Node(id); 
         }
     }
 
@@ -75,9 +75,7 @@ public:
         }
 
         Node* target = node_map[id];
-
-        // Удалить все входящие рёбра
-        for (Edge* edge : target->in_edges) {
+        for (Edge* edge : target->in_edges) {//удаление всех входящих рёбер перед удаление самой вершины 
             Node* from = edge->from;
             auto& out_vec = from->out_edges;
             for (auto it = out_vec.begin(); it != out_vec.end(); ++it) {
@@ -89,8 +87,7 @@ public:
             delete edge;
         }
 
-        // Удалить все исходящие рёбра
-        for (Edge* edge : target->out_edges) {
+        for (Edge* edge : target->out_edges) {//теперь удаление всех исходящих рёбер
             Node* to = edge->to;
             auto& in_vec = to->in_edges;
             for (auto it = in_vec.begin(); it != in_vec.end(); ++it) {
@@ -140,10 +137,12 @@ public:
         }
     }
 
-    void ProNumbering(const std::string& start_id) {
+    std::vector<std::string> ProNumbering(const std::string& start_id) {
+        std::vector<std::string> post_order;
+
         if (!node_map.count(start_id)) {
             std::cout << "Unknown node " << start_id << std::endl;
-            return;
+            return post_order;
         }
 
         std::unordered_set<Node*> visited, rec_stack;
@@ -154,15 +153,9 @@ public:
         }
 
         visited.clear();
-        std::vector<std::string> post_order;
-        DfsPostOrder(node_map[start_id], visited, post_order);
 
-        for (size_t i = 0; i < post_order.size(); ++i) {
-            std::cout << post_order[post_order.size() - i - 1];
-            if (i + 1 < post_order.size())
-                std::cout << " ";
-        }
-        std::cout << std::endl;
+        DfsPostOrder(node_map[start_id], visited, post_order);
+        return post_order; 
     }
 
     void Dijkstra (const std::string& start_id);
