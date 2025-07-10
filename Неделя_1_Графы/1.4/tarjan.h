@@ -13,35 +13,38 @@ std::vector<std::vector<Node*>> Graph::Tarjan(const std::string& start_id) {
     }
 
     std::unordered_map<Node*, int> index;
-    std::unordered_map<Node*, int> lowlink;
-    std::unordered_map<Node*, bool> on_stack;
-    std::stack<Node*> S;
+    std::unordered_map<Node*, int> lowlink; //индекс наименьшей вершины, достижимой при текущем индексе
+    std::unordered_map<Node*, bool> on_stack; //есть ли вершина в стеке
+    std::stack<Node*> node_stack; //сам стек
 
     int current_index = 0;
 
-    std::function<void(Node*)> strongconnect = [&](Node* v) {
+    std::function<void(Node*)> strong_connection = [&](Node* v) {
         index[v] = current_index;
         lowlink[v] = current_index;
         current_index++;
-        S.push(v);
+        node_stack.push(v);
         on_stack[v] = true;
 
-        for (Edge* e : v->out_edges) {
+        std::vector<Edge*>::iterator it = v->out_edges.begin();
+        while (it != v->out_edges.end()) {
+            Edge* e = *it;
             Node* w = e->to;
             if (index.find(w) == index.end()) {
-                strongconnect(w);
+                strong_connection(w);
                 lowlink[v] = std::min(lowlink[v], lowlink[w]);
             } else if (on_stack[w]) {
                 lowlink[v] = std::min(lowlink[v], index[w]);
             }
+            ++it;
         }
 
         if (lowlink[v] == index[v]) {
             std::vector<Node*> component;
             Node* w;
             do {
-                w = S.top();
-                S.pop();
+                w = node_stack.top();
+                node_stack.pop();
                 on_stack[w] = false;
                 component.push_back(w);
             } while (w != v);
@@ -55,9 +58,12 @@ std::vector<std::vector<Node*>> Graph::Tarjan(const std::string& start_id) {
     std::function<void(Node*)> dfs_all = [&](Node* node) {
         if (!visited.count(node)) {
             visited.insert(node);
-            strongconnect(node);
-            for (Edge* edge : node->out_edges) {
+            strong_connection(node);
+            std::vector<Edge*>::iterator it = node->out_edges.begin();
+            while (it != node->out_edges.end()) {
+                Edge* edge = *it;
                 dfs_all(edge->to);
+                ++it;
             }
         }
     };
@@ -66,4 +72,5 @@ std::vector<std::vector<Node*>> Graph::Tarjan(const std::string& start_id) {
 
     return components;
 }
+
 
