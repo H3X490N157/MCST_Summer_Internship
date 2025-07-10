@@ -1,6 +1,4 @@
 #include "dijkstra.h"
-#include <sstream>
-
 #pragma once
 
 void test_dijkstra() {//т.к. Дейкстра у меня void-функция, которая ничего не возвращает, но печает в консоль, то через sstream я буду считывать выведенные результаты из консоли и уже затем проверять 
@@ -135,5 +133,5 @@ void test_dijkstra() {//т.к. Дейкстра у меня void-функция,
     assert(result.find("J 13\n") != std::string::npos);
 
     std::cout.rdbuf(old_buf);
-    std::cout << "Тесты на алгоритм Дейстры пройдены" << std::endl;
+    std::cout << "Тесты на алгоритм Дейкстры пройдены" << std::endl;
 }
