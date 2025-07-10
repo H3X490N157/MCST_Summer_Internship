@@ -5,7 +5,7 @@
 #include <string>
 #include "graph.h"  
 
-void test_pro_numbering() {
+void test_pro_numbering() {//так как здесь особо нечего тестировать, то покрытие тестами будет меньше, чем для дальнейних подзаданий
     Graph g;
     //дефолтный тест на пронумерование
     g.AddNode("A");
@@ -19,7 +19,7 @@ void test_pro_numbering() {
     result = g.ProNumbering("B");
     expectation = {"B"};
     assert(result == expectation);
-    ///тест на корректность работы пронумеровки с 3 узлами
+    //тест на корректность работы пронумеровки с 3 узлами
     g.AddNode("A");
     g.AddNode("C");
     g.AddEdge("A", "B", 12);
@@ -27,7 +27,7 @@ void test_pro_numbering() {
     result = g.ProNumbering("A");
     expectation = {"A", "B", "C"};
     assert(result == expectation);
-    ///тест на корректность работы с циклом
+    //тест на корректность работы с циклом
     g.AddEdge("C", "A", 6);
     result = g.ProNumbering("C");
     expectation = {"C", "A", "B"};
