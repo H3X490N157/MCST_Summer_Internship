@@ -133,5 +133,5 @@ void test_dijkstra() {//т.к. Дейкстра у меня void-функция,
     assert(result.find("J 13\n") != std::string::npos);
 
     std::cout.rdbuf(old_buf);
-    std::cout << "Тесты на алгоритм Дейстры пройдены" << std::endl;
+    std::cout << "Тесты на алгоритм Дейкстры пройдены" << std::endl;
 }
