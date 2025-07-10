@@ -1,6 +1,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <stack>
+#pragma once
 
 #include "edge.h"
 
@@ -40,6 +41,24 @@ private:
     }
 
 public:
+    ~Graph() {//санитайзер ругался из-за отсутствия деструктора
+        for (std::unordered_map<std::string, Node*>::iterator it = node_map.begin(); it != node_map.end(); ++it) {
+            Node* node = it->second;
+            for (std::vector<Edge*>::iterator edge_it = node->out_edges.begin(); edge_it != node->out_edges.end(); ++edge_it) {
+                delete *edge_it;
+            }
+            
+            node->out_edges.clear();
+            node->in_edges.clear();//чистим входящие и исходящие рёьря
+        }
+        
+        for (std::unordered_map<std::string, Node*>::iterator it = node_map.begin(); it != node_map.end(); ++it) {
+            delete it->second;//вычищаем вершины
+            }
+        node_map.clear();//на всякий случай дочищаем node_map
+    }
+
+
     void AddNode(const std::string& id) {
         if (!node_map.count(id)) {
             node_map[id] = new Node(id); 
@@ -152,6 +171,11 @@ public:
         visited.clear();
 
         DfsPostOrder(node_map[start_id], visited, post_order);
-        return post_order; 
+
+        std::vector<std::string> order;
+            for (size_t i = 0; i < post_order.size(); ++i) {
+                order.push_back(post_order[post_order.size() - i - 1]);
+            }
+        return order; 
     }
 };

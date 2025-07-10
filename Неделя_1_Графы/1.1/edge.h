@@ -1,4 +1,5 @@
 #include "node.h"
+#pragma once
 
 struct Edge {
     Node* from; 

@@ -46,6 +46,23 @@ private:
     }
 
 public:
+     ~Graph() {//санитайзер ругался из-за отсутствия деструктора
+        for (std::unordered_map<std::string, Node*>::iterator it = node_map.begin(); it != node_map.end(); ++it) {
+            Node* node = it->second;
+            for (std::vector<Edge*>::iterator edge_it = node->out_edges.begin(); edge_it != node->out_edges.end(); ++edge_it) {
+                delete *edge_it;
+            }
+            
+            node->out_edges.clear();
+            node->in_edges.clear();//чистим входящие и исходящие рёьря
+        }
+        
+        for (std::unordered_map<std::string, Node*>::iterator it = node_map.begin(); it != node_map.end(); ++it) {
+            delete it->second;//вычищаем вершины
+            }
+        node_map.clear();//на всякий случай дочищаем node_map
+    }
+    
     void AddNode(const std::string& id) {
         if (!node_map.count(id)) {
             node_map[id] = new Node(id); 

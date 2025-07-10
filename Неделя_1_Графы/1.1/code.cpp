@@ -32,8 +32,8 @@ int main() {
             input >> id;
             std::vector<std::string> post_order = graph.ProNumbering(id);
             for (size_t i = 0; i < post_order.size(); ++i) {
-                std::cout << post_order[post_order.size() - i - 1];
-                if (i + 1 < post_order.size()) {
+                std::cout << post_order[i];
+                if (i < post_order.size() - 1) {
                     std::cout << " ";
                 }
             }

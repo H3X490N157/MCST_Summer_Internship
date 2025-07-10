@@ -1,6 +1,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#pragma once
 
 struct Edge; // костыль: т.к. вершины должны иметь список входящий и исходящих рёбер, а рёбра - список вершин на их конца, то я объявляю Edge, затем определяю Node и уже затем переопределяю Edge
 
