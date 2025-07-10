@@ -5,17 +5,17 @@
 #include <functional>
 #pragma once
 
-void Graph::Tarjan(const std::string& start_id) {
+std::vector<std::vector<Node*>> Graph::Tarjan(const std::string& start_id) {
+    std::vector<std::vector<Node*>> components;
     if (node_map.find(start_id) == node_map.end()) {
         std::cout << "Unknown node " << start_id << std::endl;
-        return;
+        return components;
     }
 
     std::unordered_map<Node*, int> index;
     std::unordered_map<Node*, int> lowlink;
     std::unordered_map<Node*, bool> on_stack;
     std::stack<Node*> S;
-    std::vector<std::vector<Node*>> components;
 
     int current_index = 0;
 
@@ -64,12 +64,6 @@ void Graph::Tarjan(const std::string& start_id) {
 
     dfs_all(node_map[start_id]);
 
-    for (const auto& comp : components) {
-        for (size_t i = 0; i < comp.size(); ++i) {
-            std::cout << comp[i]->id;
-            if (i + 1 < comp.size()) std::cout << " ";
-        }
-        std::cout << std::endl;
-    }
+    return components;
 }
 

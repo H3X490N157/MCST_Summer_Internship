@@ -62,7 +62,7 @@ public:
             }
         node_map.clear();//на всякий случай дочищаем node_map
     }
-    
+
     void AddNode(const std::string& id) {
         if (!node_map.count(id)) {
             node_map[id] = new Node(id); 
@@ -175,7 +175,12 @@ public:
         visited.clear();
 
         DfsPostOrder(node_map[start_id], visited, post_order);
-        return post_order; 
+
+        std::vector<std::string> order;
+            for (size_t i = 0; i < post_order.size(); ++i) {
+                order.push_back(post_order[post_order.size() - i - 1]);
+            }
+        return order; 
     }
 
     void Dijkstra (const std::string& start_id);

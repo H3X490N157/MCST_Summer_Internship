@@ -175,12 +175,17 @@ public:
         visited.clear();
 
         DfsPostOrder(node_map[start_id], visited, post_order);
-        return post_order; 
+
+        std::vector<std::string> order;
+            for (size_t i = 0; i < post_order.size(); ++i) {
+                order.push_back(post_order[post_order.size() - i - 1]);
+            }
+        return order; 
     }
 
     void Dijkstra (const std::string& start_id);
 
     int FordFulkerson(const std::string& source_id, const std::string& sink_id); 
 
-    void Tarjan(const std::string& start_id);
+    std::vector<std::vector<Node*>> Tarjan(const std::string& start_id);
 };

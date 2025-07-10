@@ -1,35 +1,35 @@
 #include "dijkstra.h"
-#include <sstream>
 
-//предварительные тесты
+//реализация примитивной консоли
 int main() {
     Graph graph;
-    std::string line;
-    while (std::getline(std::cin, line)) {
-        std::stringstream ss(line);
-        std::string cmd;
-        ss >> cmd;
+    std::string cmd;
+
+    while (std::cin >> cmd) {
         if (cmd == "NODE") {
             std::string id;
-            ss >> id;
+            std::cin >> id;
             graph.AddNode(id);
-        } else if (cmd == "EDGE") {
+        } 
+        else if (cmd == "EDGE") {
             std::string from, to;
             int weight;
-            ss >> from >> to >> weight;
+            std::cin >> from >> to >> weight;
             graph.AddEdge(from, to, weight);
-        } else if (cmd == "REMOVE") {
+        } 
+        else if (cmd == "REMOVE") {
             std::string type, a, b;
-            ss >> type >> a;
+            std::cin >> type >> a;
             if (type == "NODE") {
                 graph.RemoveNode(a);
             } else if (type == "EDGE") {
-                ss >> b;
+                std::cin >> b;
                 graph.RemoveEdge(a, b);
             }
-        } else if (cmd == "PRO_NUMBERING") {
+        } 
+        else if (cmd == "PRO_NUMBERING") {
             std::string id;
-            input >> id;
+            std::cin >> id;
             std::vector<std::string> post_order = graph.ProNumbering(id);
             for (size_t i = 0; i < post_order.size(); ++i) {
                 std::cout << post_order[i];
@@ -38,11 +38,12 @@ int main() {
                 }
             }
             std::cout << std::endl;
-        } else if (cmd == "DIJKSTRA"){
+        } 
+        else if (cmd == "DIJKSTRA") {
             std::string id;
-            ss >> id;
+            std::cin >> id;
             graph.Dijkstra(id);
-        }
+        } 
     }
     return 0;
 }

@@ -6,12 +6,11 @@ void Graph::Dijkstra(const std::string& start_id) {
             return;
         }
 
-
         Node* start_node = node_map[start_id];
 
         std::unordered_map<Node*, int> D;
         for (const auto& pair : node_map) {
-            D[pair.second] = std::numeric_limits<int>::max();  // Все вершины изначально на "бесконечности"
+            D[pair.second] = std::numeric_limits<int>::max(); 
         }
         D[start_node] = 0;
 
