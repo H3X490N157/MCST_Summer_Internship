@@ -1,9 +1,8 @@
 #include "dijkstra.h"
 #include <sstream>
-
 #pragma once
 
-void test_dijkstra() {//т.к. Дейкстра у меня void-функция, которая ничего не возвращает, но печает в консоль, то через sstream я буду считывать выведенные результаты из консоли и уже затем проверять 
+void TestDijkstra() {//т.к. Дейкстра у меня void-функция, которая ничего не возвращает, но печает в консоль, то через sstream я буду считывать выведенные результаты из консоли и уже затем проверять 
     Graph test_graph;
     std::ostringstream out;
     std::streambuf* old_buf = std::cout.rdbuf(out.rdbuf());

@@ -1,7 +1,7 @@
 #include "fordfulkerson.h"
 #pragma once
 
-void test_ford_fulkerson() {
+void TestFordFulkerson(){
     Graph test_graph;
     int result;
 

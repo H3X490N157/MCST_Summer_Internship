@@ -10,7 +10,7 @@
 
 
 int main(){
-    test_pro_numbering();
-    test_dijkstra();
+    TestProNumbering();
+    TestDijkstra();
     return 0;
 }

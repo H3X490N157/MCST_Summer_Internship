@@ -11,9 +11,9 @@
 #include "test_tarjan.h"
 
 int main(){
-    test_pro_numbering();
-    test_dijkstra();
-    test_ford_fulkerson();
-    test_tarjan();
+    TestProNumbering();
+    TestDijkstra();
+    TestFordFulkerson();
+    TestTarjan();
     return 0;
 }

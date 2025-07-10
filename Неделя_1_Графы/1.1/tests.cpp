@@ -8,6 +8,6 @@
 #include "test_pro_numbering.h"
 
 int main(){
-    test_pro_numbering();
+    TestProNumbering();
     return 0;
 }

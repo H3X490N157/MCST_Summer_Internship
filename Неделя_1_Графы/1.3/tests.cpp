@@ -9,8 +9,8 @@
 #include "test_max_flow.h"
 
 int main(){
-    test_pro_numbering();
-    test_dijkstra();
-    test_ford_fulkerson();
+    TestProNumbering();
+    TestDijkstra();
+    TestFordFulkerson();
     return 0;
 }

@@ -18,7 +18,7 @@ std::vector<std::vector<std::string>> ConvertToStringComponents(const std::vecto
     return strong_components;
 }
 
-void test_tarjan() {
+void TestTarjan() {
     Graph test_graph;
     std::vector<std::vector<std::string>> strong_components;
 
