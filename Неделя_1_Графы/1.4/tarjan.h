@@ -19,7 +19,7 @@ std::vector<std::vector<Node*>> Graph::Tarjan(const std::string& start_id) {//н
 
     int current_index = 0;
 
-    std::function<void(Node*)> strong_connection = [&](Node* v) {
+    std::function<void(Node*)> strong_connection = [&](Node* v) {//рекурсия для поиска КСС
         index[v] = current_index;
         lowlink[v] = current_index;
         current_index++;
@@ -27,7 +27,7 @@ std::vector<std::vector<Node*>> Graph::Tarjan(const std::string& start_id) {//н
         on_stack[v] = true;
 
         std::vector<Edge*>::iterator it = v->out_edges.begin();
-        while (it != v->out_edges.end()) {
+        while (it != v->out_edges.end()) {//проходим по всем исходящим рёбрам
             Edge* e = *it;
             Node* w = e->to;
             if (index.find(w) == index.end()) {
@@ -39,7 +39,7 @@ std::vector<std::vector<Node*>> Graph::Tarjan(const std::string& start_id) {//н
             ++it;
         }
 
-        if (lowlink[v] == index[v]) {
+        if (lowlink[v] == index[v]) {//проверка на случай, если текущая вершина - корень КСС
             std::vector<Node*> component;
             Node* w;
             do {
@@ -48,14 +48,14 @@ std::vector<std::vector<Node*>> Graph::Tarjan(const std::string& start_id) {//н
                 on_stack[w] = false;
                 component.push_back(w);
             } while (w != v);
-            if (component.size() > 1) {
+            if (component.size() > 1) {//проверка на то, чтобы одиночные вершины не добавлялись в качестве отдельных КСС
                 components.push_back(component);
             }
         }
     };
 
     std::unordered_set<Node*> visited;
-    std::function<void(Node*)> dfs_all = [&](Node* node) {
+    std::function<void(Node*)> dfs_all = [&](Node* node) {//слегка изменённый DFS в лямбда-функции для прохода по всем вершинам графа
         if (!visited.count(node)) {
             visited.insert(node);
             strong_connection(node);
