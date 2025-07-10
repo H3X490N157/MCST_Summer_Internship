@@ -3,26 +3,24 @@
 
 int Graph::FordFulkerson(const std::string& source_id, const std::string& sink_id) {
     if (!node_map.count(source_id) || !node_map.count(sink_id)) {
-        std::cout << "Unknown node(s)" << std::endl;
+        std::cout << "Unknown node(s)" << std::endl;//в ТЗ не было сказано, как действовать в случае неправильного ввода в MAX FLOW
         return 0;
     }
 
     Node* source = node_map[source_id];
     Node* sink = node_map[sink_id];
+    std::unordered_map<Edge*, int> flow;//поток на каждом ребре, изначально минимален, т.е. 0
 
-    // Поток на каждом ребре (изначально ноль)
-    std::unordered_map<Edge*, int> flow;
-
-    // Добавим обратные рёбра (виртуально, в residual graph, но не изменяем граф)
     while (true) {
         std::unordered_map<Node*, Edge*> parent;
         std::queue<Node*> q;
         q.push(source);
 
-        // BFS для нахождения увеличивающего пути
-        while (!q.empty()) {
+        while (!q.empty()) {//BFS для нахождения увеличивающего пути
             Node* curr = q.front(); q.pop();
-            for (Edge* edge : curr->out_edges) {
+            std::vector<Edge*>::iterator it = curr->out_edges.begin();
+            while (it != curr->out_edges.end()) {
+                Edge* edge = *it;
                 Node* to = edge->to;
                 int capacity = edge->weight;
                 int used_flow = flow[edge];
@@ -32,26 +30,27 @@ int Graph::FordFulkerson(const std::string& source_id, const std::string& sink_i
                     parent[to] = edge;
                     q.push(to);
                 }
+                ++it;
             }
 
-            // Добавляем возможность обратного потока
-            for (Edge* edge : curr->in_edges) {
+            it = curr->in_edges.begin();
+            while (it != curr->in_edges.end()) {//обратный поток
+                Edge* edge = *it;
                 Node* from = edge->from;
                 if (flow[edge] > 0 && !parent.count(from)) {
-                    parent[from] = edge;  // используем обратное направление
+                    parent[from] = edge;  //используем обратное направление потока
                     q.push(from);
                 }
+                ++it;
             }
         }
 
-        // Нет пути до sink — всё
-        if (!parent.count(sink)) {
+        if (!parent.count(sink)) {//прерывание в случае отсутствия пути в sink
             break;
         }
 
-        // Найдём минимальную пропускную способность на пути
         int path_flow = INT_MAX;
-        for (Node* v = sink; v != source;) {
+        for (Node* v = sink; v != source;) {//обновим пропускную способность
             Edge* e = parent[v];
             if (e->to == v) {
                 path_flow = std::min(path_flow, e->weight - flow[e]);
@@ -63,8 +62,7 @@ int Graph::FordFulkerson(const std::string& source_id, const std::string& sink_i
             }
         }
 
-        // Обновим потоки
-        for (Node* v = sink; v != source;) {
+        for (Node* v = sink; v != source;) {//поиск потоков
             Edge* e = parent[v];
             if (e->to == v) {
                 flow[e] += path_flow;
@@ -76,10 +74,12 @@ int Graph::FordFulkerson(const std::string& source_id, const std::string& sink_i
         }
     }
 
-    // Подсчёт общего потока из source
-    int max_flow = 0;
-    for (Edge* edge : source->out_edges) {
+    int max_flow = 0;//подсчёт общего потока
+    std::vector<Edge*>::iterator it = source->out_edges.begin();
+    while (it != source->out_edges.end()) {
+        Edge* edge = *it;
         max_flow += flow[edge];
+        ++it;
     }
 
     return max_flow;
