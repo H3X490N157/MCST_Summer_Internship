@@ -7,6 +7,8 @@
 
 #include "edge.h"
 
+#pragma once
+
 class Graph {
 private:
     std::unordered_map<std::string, Node*> node_map;
