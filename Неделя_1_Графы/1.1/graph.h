@@ -41,7 +41,7 @@ private:
     }
 
 public:
-    ~Graph() {//санитайзер ругался из-за отсутствия деструктора
+    ~Graph() { // санитайзер ругался из-за отсутствия деструктора
         for (std::unordered_map<std::string, Node*>::iterator it = node_map.begin(); it != node_map.end(); ++it) {
             Node* node = it->second;
             for (std::vector<Edge*>::iterator edge_it = node->out_edges.begin(); edge_it != node->out_edges.end(); ++edge_it) {
@@ -49,16 +49,15 @@ public:
             }
             
             node->out_edges.clear();
-            node->in_edges.clear();//чистим входящие и исходящие рёьря
+            node->in_edges.clear(); // чистим входящие и исходящие рёбры
         }
         
         for (std::unordered_map<std::string, Node*>::iterator it = node_map.begin(); it != node_map.end(); ++it) {
-            delete it->second;//вычищаем вершины
-            }
-        node_map.clear();//на всякий случай дочищаем node_map
+            delete it->second; // вычищаем вершины
+        }
+        node_map.clear(); // на всякий случай дочищаем node_map
     }
-
-
+    
     void AddNode(const std::string& id) {
         if (!node_map.count(id)) {
             node_map[id] = new Node(id); 
@@ -91,28 +90,28 @@ public:
         }
 
         Node* target = node_map[id];
-        for (Edge* edge : target->in_edges) {//удаление всех входящих рёбер перед удаление самой вершины 
-            Node* from = edge->from;
-            auto& out_vec = from->out_edges;
-            for (auto it = out_vec.begin(); it != out_vec.end(); ++it) {
-                if (*it == edge) {
-                    out_vec.erase(it);
+        for (std::vector<Edge*>::iterator it = target->in_edges.begin(); it != target->in_edges.end(); ++it) { // удаление всех входящих рёбер перед удалением самой вершины 
+            Node* from = (*it)->from;
+            std::vector<Edge*>& out_vec = from->out_edges;
+            for (std::vector<Edge*>::iterator out_it = out_vec.begin(); out_it != out_vec.end(); ++out_it) {
+                if (*out_it == *it) {
+                    out_vec.erase(out_it);
                     break;
                 }
             }
-            delete edge;
+            delete *it;
         }
 
-        for (Edge* edge : target->out_edges) {//теперь удаление всех исходящих рёбер
-            Node* to = edge->to;
-            auto& in_vec = to->in_edges;
-            for (auto it = in_vec.begin(); it != in_vec.end(); ++it) {
-                if (*it == edge) {
-                    in_vec.erase(it);
+        for (std::vector<Edge*>::iterator it = target->out_edges.begin(); it != target->out_edges.end(); ++it) { // теперь удаление всех исходящих рёбер
+            Node* to = (*it)->to;
+            std::vector<Edge*>& in_vec = to->in_edges;
+            for (std::vector<Edge*>::iterator in_it = in_vec.begin(); in_it != in_vec.end(); ++in_it) {
+                if (*in_it == *it) {
+                    in_vec.erase(in_it);
                     break;
                 }
             }
-            delete edge;
+            delete *it;
         }
 
         delete target;
@@ -134,13 +133,13 @@ public:
         Node* from_node = node_map[from];
         Node* to_node = node_map[to];
 
-        for (auto it = from_node->out_edges.begin(); it != from_node->out_edges.end(); ++it) {
+        for (std::vector<Edge*>::iterator it = from_node->out_edges.begin(); it != from_node->out_edges.end(); ++it) {
             if ((*it)->to == to_node) {
                 Edge* edge = *it;
                 from_node->out_edges.erase(it);
 
-                auto& in_vec = to_node->in_edges;
-                for (auto in_it = in_vec.begin(); in_it != in_vec.end(); ++in_it) {
+                std::vector<Edge*>& in_vec = to_node->in_edges;
+                for (std::vector<Edge*>::iterator in_it = in_vec.begin(); in_it != in_vec.end(); ++in_it) {
                     if (*in_it == edge) {
                         in_vec.erase(in_it);
                         break;
@@ -173,9 +172,9 @@ public:
         DfsPostOrder(node_map[start_id], visited, post_order);
 
         std::vector<std::string> order;
-            for (size_t i = 0; i < post_order.size(); ++i) {
-                order.push_back(post_order[post_order.size() - i - 1]);
-            }
+        for (size_t i = 0; i < post_order.size(); ++i) {
+            order.push_back(post_order[post_order.size() - i - 1]);
+        }
         return order; 
     }
 };
