@@ -11,6 +11,8 @@ TEST_SRC = tests.cpp
 TEST_EXE = tests
 
 all: build
+
+#что тесты, что консоль запускаются сразу после сборки
 build: $(RUN) 
 	./$(RUN)
 
@@ -21,7 +23,6 @@ $(RUN): $(OBJ)
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Сборка и запуск тестов
 test: $(TEST_EXE)
 	./$(TEST_EXE)
 
