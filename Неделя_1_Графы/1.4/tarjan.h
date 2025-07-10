@@ -5,7 +5,7 @@
 #include <functional>
 #pragma once
 
-std::vector<std::vector<Node*>> Graph::Tarjan(const std::string& start_id) {
+std::vector<std::vector<Node*>> Graph::Tarjan(const std::string& start_id) {//не совсем понятно, зачем нам выбор вершины (если по определению, вершина может принадлежать лишь одной КСС); в данной функции буду выводить компоненты сильной связности, достижимые из поданной вершины
     std::vector<std::vector<Node*>> components;
     if (node_map.find(start_id) == node_map.end()) {
         std::cout << "Unknown node " << start_id << std::endl;

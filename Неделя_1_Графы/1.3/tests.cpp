@@ -1,4 +1,3 @@
-#include "graph.h"
 #include <cassert>
 #include <iostream>
 #include <vector>
@@ -11,5 +10,7 @@
 
 int main(){
     test_pro_numbering();
+    test_dijkstra();
+    test_ford_fulkerson();
     return 0;
 }

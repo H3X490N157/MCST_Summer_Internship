@@ -13,5 +13,7 @@
 int main(){
     test_pro_numbering();
     test_dijkstra();
+    test_ford_fulkerson();
+    test_tarjan();
     return 0;
 }
