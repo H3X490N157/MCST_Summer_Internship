@@ -13,9 +13,8 @@ int main() {
         } 
         else if (cmd == "EDGE") {
             std::string from, to;
-            int weight;
-            std::cin >> from >> to >> weight;
-            graph.AddEdge(from, to, weight);
+            std::cin >> from >> to;
+            graph.AddEdge(from, to);
         } 
         else if (cmd == "REMOVE") {
             std::string type, a, b;

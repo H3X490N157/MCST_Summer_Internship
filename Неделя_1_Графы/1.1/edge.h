@@ -6,5 +6,5 @@ struct Edge {
     Node* to; 
     int weight; 
     
-    Edge(Node* f, Node* t, int w) : from(f), to(t), weight(w) {}
+    Edge(Node* f, Node* t): from(f), to(t), weight(0) {}
 };

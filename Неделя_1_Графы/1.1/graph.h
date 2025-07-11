@@ -64,7 +64,7 @@ public:
         }
     }
 
-    void AddEdge(const std::string& from, const std::string& to, int weight) {
+    void AddEdge(const std::string& from, const std::string& to) {
         if (!node_map.count(from) && !node_map.count(to)) {
             std::cout << "Unknown nodes " << from << " " << to << std::endl;
             return;
@@ -78,7 +78,7 @@ public:
 
         Node* from_node = node_map[from];
         Node* to_node = node_map[to];
-        Edge* edge = new Edge(from_node, to_node, weight);
+        Edge* edge = new Edge(from_node, to_node);
         from_node->out_edges.push_back(edge);
         to_node->in_edges.push_back(edge);
     }

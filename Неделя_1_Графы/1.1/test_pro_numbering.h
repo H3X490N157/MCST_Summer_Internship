@@ -6,7 +6,7 @@ void TestProNumbering() {//так как здесь особо нечего те
     //дефолтный тест на пронумерование
     g.AddNode("A");
     g.AddNode("B");
-    g.AddEdge("A", "B", 4);
+    g.AddEdge("A", "B");
     std::vector<std::string> result = g.ProNumbering("A");
     std::vector<std::string> expectation = {"A", "B"};
     assert(result == expectation);
@@ -18,13 +18,13 @@ void TestProNumbering() {//так как здесь особо нечего те
     //тест на корректность работы пронумеровки с 3 узлами
     g.AddNode("A");
     g.AddNode("C");
-    g.AddEdge("A", "B", 12);
-    g.AddEdge("B", "C", 7);
+    g.AddEdge("A", "B");
+    g.AddEdge("B", "C");
     result = g.ProNumbering("A");
     expectation = {"A", "B", "C"};
     assert(result == expectation);
     //тест на корректность работы с циклом
-    g.AddEdge("C", "A", 6);
+    g.AddEdge("C", "A");
     result = g.ProNumbering("C");
     expectation = {"C", "A", "B"};
     assert(result == expectation);
