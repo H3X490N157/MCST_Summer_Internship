@@ -26,10 +26,10 @@ int main() {
                 graph.RemoveEdge(a, b);
             }
         } 
-        else if (cmd == "PRO_NUMBERING") {
+        else if (cmd == "RPO_NUMBERING") {
             std::string id;
             std::cin >> id;
-            std::vector<std::string> post_order = graph.ProNumbering(id);
+            std::vector<std::string> post_order = graph.RpoNumbering(id);
             for (size_t i = 0; i < post_order.size(); ++i) {
                 std::cout << post_order[i];
                 if (i < post_order.size() - 1) {

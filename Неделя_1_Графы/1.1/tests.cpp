@@ -5,9 +5,9 @@
 #include <string>
 
 #include "graph.h"  
-#include "test_pro_numbering.h"
+#include "test_rpo_numbering.h"
 
 int main(){
-    TestProNumbering();
+    TestRpoNumbering();
     return 0;
 }
