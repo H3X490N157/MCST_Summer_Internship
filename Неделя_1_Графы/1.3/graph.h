@@ -14,24 +14,23 @@ class Graph {
 private:
     std::unordered_map<std::string, Node*> node_map;
 
-    bool DfsCycleDetect(Node* node, std::unordered_set<Node*>& visited,
-                        std::unordered_set<Node*>& rec_stack,
-                        std::string& loop_from, std::string& loop_to) {
-        visited.insert(node); //помечаем вершину, как посещённую
-        rec_stack.insert(node); //добавляем в стек для 
-        for (Edge* edge : node->out_edges) { //проверяем все вершины, в которые можем попасть из текущей
-            Node* neighbor = edge->to;
-            if (rec_stack.count(neighbor)) { //если её вершина-сосед уже в стеке, значит, есть цикл
-                loop_from = node->id; //изменяем переменные начала конца и цикла
-                loop_to = neighbor->id;
-                return true;
-            } else if (!visited.count(neighbor)) {
-                if (DfsCycleDetect(neighbor, visited, rec_stack, loop_from, loop_to))//цикла нет - ищем дальше
-                    return true;
+    void DfsCycleDetect(Node* node,
+                   std::unordered_set<Node*>& visited,
+                   std::unordered_set<Node*>& rec_stack,
+                   std::vector<std::pair<std::string, std::string>>& cycles) {
+        visited.insert(node);//помечаем текущую вершину как посещённую
+        rec_stack.insert(node);//добавляем её в стек текущего пути (для отслеживания циклов)
+
+        for (Edge* edge : node->out_edges) {//обходим всех соседей, в которых можно попасть по рёбрам
+            Node* neighbour = edge->to;
+            if (rec_stack.count(neighbour)) { //если сосед уже в стеке, значит -  цикл
+                cycles.emplace_back(neighbour->id, node->id);//добавляем информацию о цикле
+            } 
+            else if (!visited.count(neighbour)) { //DFS от соседа
+                DfsCycleDetect(neighbour, visited, rec_stack, cycles);
             }
         }
-        rec_stack.erase(node); //чистим стек от текущей вершины,
-        return false;
+        rec_stack.erase(node);//чистим стек
     }
 
     void DfsPostOrder(Node* node, std::unordered_set<Node*>& visited,
@@ -157,31 +156,31 @@ public:
         }
     }
 
-    std::vector<std::string> ProNumbering(const std::string& start_id) {
+    std::vector<std::string> RpoNumbering(const std::string& start_id) {
         std::vector<std::string> post_order;
-
         if (!node_map.count(start_id)) {
             std::cout << "Unknown node " << start_id << std::endl;
             return post_order;
         }
 
         std::unordered_set<Node*> visited, rec_stack;
-        std::string loop_from, loop_to;
+        std::vector<std::pair<std::string, std::string>> cycles;
 
-        if (DfsCycleDetect(node_map[start_id], visited, rec_stack, loop_from, loop_to)) {
-            std::cout << "Found loop " << loop_to << "->" << loop_from << std::endl;
+        DfsCycleDetect(node_map[start_id], visited, rec_stack, cycles);
+        for (std::pair<std::string, std::string> p : cycles) {
+            std::cout << "Found loop " << p.first << "->" << p.second << std::endl;
         }
 
         visited.clear();
-
         DfsPostOrder(node_map[start_id], visited, post_order);
 
         std::vector<std::string> order;
         for (size_t i = 0; i < post_order.size(); ++i) {
             order.push_back(post_order[post_order.size() - i - 1]);
         }
-        return order; 
+        return order;
     }
+
 
     void Dijkstra (const std::string& start_id);
 
