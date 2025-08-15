@@ -3,7 +3,7 @@ OPT=/usr/bin/opt-15
 PASS_NAME=MyPass
 SRC=NewPass.cpp
 SO=NewPass.so
-TESTS=test.ll test2.ll
+TESTS=test.ll test2.ll test3.ll
 
 all: $(SO)
 
@@ -12,7 +12,6 @@ $(SO): $(SRC)
 
 build: $(SO)
 	@for t in $(TESTS); do \
-		echo "=== Running on $$t ==="; \
 		$(OPT) -load-pass-plugin ./$(SO) -passes=$(PASS_NAME) -disable-output $$t; \
 	done
 
