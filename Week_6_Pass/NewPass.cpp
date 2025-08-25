@@ -1,117 +1,171 @@
 #include "llvm/IR/Function.h"
 #include "llvm/IR/BasicBlock.h"
 #include "llvm/IR/Instructions.h"
+#include "llvm/IR/Constants.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
 #include "llvm/Support/raw_ostream.h"
 
-#include <unordered_set>
 #include <unordered_map>
 #include <vector>
-#include <string>
-#include <algorithm>
+
+using namespace llvm;
 
 namespace {
 
-std::string GetBBLabel(llvm::BasicBlock *BB, std::unordered_map<llvm::BasicBlock*, std::string> &Ids, unsigned &nextId) {
-    auto it = Ids.find(BB);
-    if (it != Ids.end()) {
-        return it->second;
+struct LatticeVal {
+    enum Kind {Top, Const, Bottom} kind;
+    ConstantInt *val;
+
+    static LatticeVal top() { 
+        return {Top, nullptr}; 
     }
-    if (BB->hasName()) {
-        return Ids.emplace(BB, BB->getName().str()).first->second;
+    
+    static LatticeVal constant(ConstantInt *v) { 
+        return {Const, v}; 
     }
-    std::string gen = ("bb" + std::to_string(nextId++));
-    return Ids.emplace(BB, gen).first->second;
+    
+    static LatticeVal bottom() {
+        return {Bottom, nullptr}; 
+    }
+};
+
+bool equal(const LatticeVal &a, const LatticeVal &b) {
+    if (a.kind != b.kind) {
+        return false;
+    }
+    
+    if (a.kind == LatticeVal::Const && b.kind == LatticeVal::Const) {
+        return a.val->equalsInt(b.val->getZExtValue());
+    }
+    
+    return true;
 }
 
-struct MyPass : llvm::PassInfoMixin<MyPass> {
-    void DFSRPO(llvm::BasicBlock *BB,
-                std::unordered_set<llvm::BasicBlock*> &visited,
-                std::vector<llvm::BasicBlock*> &postorder,
-                std::vector<llvm::BasicBlock*> &stack,
-                std::unordered_map<llvm::BasicBlock*, std::vector<llvm::BasicBlock*>> &backEdges) {
-        if (visited.count(BB)) {
-            return;
+LatticeVal join(const LatticeVal &a, const LatticeVal &b) {
+    if (a.kind == LatticeVal::Top) {
+        return b;
+    }
+    
+    if (b.kind == LatticeVal::Top) {
+        return a;
+    }
+    
+    if (a.kind == LatticeVal::Const && b.kind == LatticeVal::Const) {
+        if (a.val->equalsInt(b.val->getZExtValue())) {
+            return a;
         }
-        visited.insert(BB);
-        stack.push_back(BB);
+        return LatticeVal::bottom();
+    }
+    return LatticeVal::bottom();
+}
 
-        auto *T = BB->getTerminator();//использование типа auto - костыль, связанный с тем, что были проблемы c Instructions.h - вероятно, в моей версии LLVM отдельных типов для терминаторов просто не было
-        const unsigned n = T ? T->getNumSuccessors() : 0;
-        for (unsigned i = 0; i < n; ++i) {
-            llvm::BasicBlock *successor = T->getSuccessor(i);
-            if (!visited.count(successor)) {
-                DFSRPO(successor, visited, postorder, stack, backEdges);
-            } else {
-                if (std::find(stack.begin(), stack.end(), successor) != stack.end()) {// обратная дуга — если потомок ууже в текущем стеке 
-                    backEdges[BB].push_back(successor);
-                }
+LatticeVal getVal(Value *V, std::unordered_map<Value*, LatticeVal> &values) {
+    if (auto *C = dyn_cast<ConstantInt>(V)) {
+        return LatticeVal::constant(C);
+    }
+    auto it = values.find(V);
+    if (it != values.end()) {
+        return it->second;
+    }
+    return LatticeVal::top();
+}
+
+LatticeVal evaluate(Instruction *I, std::unordered_map<Value*, LatticeVal> &values) {
+    if (auto *BO = dyn_cast<BinaryOperator>(I)) {
+        auto L = getVal(BO->getOperand(0), values);
+        auto R = getVal(BO->getOperand(1), values);
+
+        if (L.kind == LatticeVal::Const && R.kind == LatticeVal::Const) {
+            APInt lv = L.val->getValue();
+            APInt rv = R.val->getValue();
+            APInt res;
+            switch (BO->getOpcode()) {
+                case Instruction::Add: res = lv + rv; break;
+                case Instruction::Sub: res = lv - rv; break;
+                case Instruction::Mul: res = lv * rv; break;
+                case Instruction::And: res = lv & rv; break;
+                case Instruction::Or:  res = lv | rv; break;
+                case Instruction::Xor: res = lv ^ rv; break;
+                default: return LatticeVal::bottom(); //случай, когда операция не поддердивается
             }
+            return LatticeVal::constant(cast<ConstantInt>(ConstantInt::get(I->getType(), res)));
         }
-
-        stack.pop_back();
-        postorder.push_back(BB); //потом переверну RPO - микрокостыль
+        if (L.kind == LatticeVal::Bottom || R.kind == LatticeVal::Bottom){
+            return LatticeVal::bottom();
+        }
+        return LatticeVal::top();
     }
 
-    llvm::PreservedAnalyses run(llvm::Function &F, llvm::FunctionAnalysisManager &) {
+    if (auto *CI = dyn_cast<ICmpInst>(I)) {
+        auto L = getVal(CI->getOperand(0), values);
+        auto R = getVal(CI->getOperand(1), values);
 
-        std::unordered_set<llvm::BasicBlock*> visited;
-        std::vector<llvm::BasicBlock*> postorder;
-        std::vector<llvm::BasicBlock*> stack;
-        std::unordered_map<llvm::BasicBlock*, std::vector<llvm::BasicBlock*>> backEdges;
-
-        if (!F.empty()) {
-            DFSRPO(&F.getEntryBlock(), visited, postorder, stack, backEdges);
-        }
-
-        std::unordered_map<llvm::BasicBlock*, std::string> bbIds;//привоение id, чтобы можно было поиграться с именами
-        unsigned nextId = 0;
-
-        llvm::errs() << "  RPO order:\n";
-        for (auto it = postorder.rbegin(); it != postorder.rend(); ++it) {//разворот RPO уже на месте вывода
-            llvm::BasicBlock *BB = *it;
-            llvm::errs() << "    " << GetBBLabel(BB, bbIds, nextId) << "\n";
-        }
-
-        llvm::errs() << "  Back edges:\n";
-        if (backEdges.empty()) {
-            llvm::errs() << "    (none)\n";
-        } else {
-            for (auto &kv : backEdges) {
-                auto from = GetBBLabel(kv.first, bbIds, nextId);
-                llvm::errs() << "    " << from << " ->";
-                for (auto *toBB : kv.second) {
-                    llvm::errs() << " " << GetBBLabel(toBB, bbIds, nextId);
-                }
-                llvm::errs() << "\n";
+        if (L.kind == LatticeVal::Const && R.kind == LatticeVal::Const) {
+            auto pred = CI->getPredicate();
+            Constant *c = ConstantExpr::getICmp(pred, L.val, R.val);
+            if (auto *cint = dyn_cast<ConstantInt>(c)) {
+                return LatticeVal::constant(cint);
             }
         }
-        llvm::errs() << "Function " << F.getName() << "():\n";
+        if (L.kind == LatticeVal::Bottom || R.kind == LatticeVal::Bottom)
+            return LatticeVal::bottom();
+        return LatticeVal::top();
+    }
 
+    return LatticeVal::top();//по умолчанию - ничего не знаем, отдаём только вершину
+}
 
-        std::unordered_map<std::string, unsigned> instCount;      
-        for (auto &BB : F) {//подсчёт числа инструкций через перебор всех инструкций
+struct GlobalConstPropPass : PassInfoMixin<GlobalConstPropPass> {
+    servedAnalyses run(Function &F, FunctionAnalysisManager &) {
+        std::unordered_map<Value*, LatticeVal> values;
+        std::vector<Instruction*> worklist;
+
+        //инициализация
+        for (auto &BB : F) {
             for (auto &I : BB) {
-                instCount[std::string(I.getOpcodeName())]++;
+                values[&I] = LatticeVal::top();
+                worklist.push_back(&I);
             }
         }
-        std::vector<std::pair<std::string,unsigned>> sorted;
-        sorted.reserve(instCount.size());
-        for (auto &p : instCount) sorted.push_back(p);
-        std::sort(sorted.begin(), sorted.end(),
-                  [](auto &a, auto &b){ return a.first < b.first; });
-        for (auto &p : sorted) {
-            llvm::errs() << "    " << p.first << ": " << p.second << "\n";
+
+        //анализ
+        while (!worklist.empty()) {
+            Instruction *I = worklist.back();
+            worklist.pop_back();
+
+            LatticeVal newVal = evaluate(I, values);
+            LatticeVal oldVal = values[I];
+
+            if (!equal(newVal, oldVal)) {
+                values[I] = newVal;
+                for (auto *U : I->users()) {
+                    if (auto *UI = dyn_cast<Instruction>(U)) {
+                        worklist.push_back(UI);
+                    }
+                }
+            }
         }
 
+        //замена
+        bool changed = false;
+        for (auto &BB : F) {
+            for (auto it = BB.begin(); it != BB.end(); ) {
+                Instruction &I = *it++;
+                auto val = values[&I];
+                if (val.kind == LatticeVal::Const) {
+                    I.replaceAllUsesWith(val.val);
+                    I.eraseFromParent();
+                    changed = true;
+                }
+            }
+        }
 
-        return llvm::PreservedAnalyses::all(); //ничего не меняем
+        return changed ? PreservedAnalyses::none()
+                       : PreservedAnalyses::all();
     }
 
-    static bool isRequired() {//обрабатываем -O0 / optnone
-        return true; 
-    } 
+    static bool isRequired() { return true; }
 };
 
 } 
@@ -120,14 +174,14 @@ extern "C" ::llvm::PassPluginLibraryInfo LLVM_ATTRIBUTE_WEAK
 llvmGetPassPluginInfo() {
     return {
         LLVM_PLUGIN_API_VERSION,
-        "MyPass",
+        "GlobalConstPropPass",
         LLVM_VERSION_STRING,
-        [](llvm::PassBuilder &PB) { //оставил название MyPass от выданного тестового образца прохода
+        [](PassBuilder &PB) {
             PB.registerPipelineParsingCallback(
-                [](llvm::StringRef Name, llvm::FunctionPassManager &FPM,
-                   llvm::ArrayRef<llvm::PassBuilder::PipelineElement>) {
-                    if (Name == "MyPass") {
-                        FPM.addPass(MyPass());
+                [](StringRef Name, FunctionPassManager &FPM,
+                   ArrayRef<PassBuilder::PipelineElement>) {
+                    if (Name == "gcp") {
+                        FPM.addPass(GlobalConstPropPass());
                         return true;
                     }
                     return false;
@@ -135,3 +189,4 @@ llvmGetPassPluginInfo() {
         }
     };
 }
+

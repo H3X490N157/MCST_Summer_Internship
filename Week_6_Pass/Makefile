@@ -1,18 +1,24 @@
 LLVM_CONFIG=llvm-config-15
-OPT=/usr/bin/opt-15
-PASS_NAME=MyPass
+OPT=opt-15
+CXX=g++
+PASS_NAME=gcp
 SRC=NewPass.cpp
 SO=NewPass.so
-TESTS=test.ll test2.ll test3.ll
+TESTS=test.ll test2.ll test3.ll test4.ll
+
+CXXFLAGS   := -fPIC -shared -std=c++17 `$(LLVM_CONFIG) --cxxflags`
+LDFLAGS    := `$(LLVM_CONFIG) --ldflags --system-libs --libs core passes`
 
 all: $(SO)
 
 $(SO): $(SRC)
-	g++ -fPIC -shared -o $(SO) $(SRC) `$$( $(LLVM_CONFIG) --cxxflags --ldflags --system-libs --libs core )`
+	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
 
+# Прогон: сначала mem2reg, потом твой GCP
 build: $(SO)
 	@for t in $(TESTS); do \
-		$(OPT) -load-pass-plugin ./$(SO) -passes=$(PASS_NAME) -disable-output $$t; \
+		echo "=== $$t after mem2reg + $(PASS_NAME) ==="; \
+		$(OPT) -load-pass-plugin ./$(SO) -passes="mem2reg,$(PASS_NAME)" -S $$t -o -; \
 	done
 
 clean:
