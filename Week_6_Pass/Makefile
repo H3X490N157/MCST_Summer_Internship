@@ -4,7 +4,7 @@ CXX=g++
 PASS_NAME=gcp
 SRC=NewPass.cpp
 SO=NewPass.so
-TESTS=test.ll test2.ll test3.ll test4.ll
+TESTS=tests/test.ll tests/test2.ll tests/test3.ll tests/test4.ll
 
 CXXFLAGS   := -fPIC -shared -std=c++17 `$(LLVM_CONFIG) --cxxflags`
 LDFLAGS    := `$(LLVM_CONFIG) --ldflags --system-libs --libs core passes`
