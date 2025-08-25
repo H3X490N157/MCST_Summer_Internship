@@ -14,7 +14,7 @@ all: $(SO)
 $(SO): $(SRC)
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
 
-# Прогон: сначала mem2reg, потом твой GCP
+#Прогон: сначала работаю с mem2reg, чтобы не писать самому это, затем уже свой основной пасс
 build: $(SO)
 	@for t in $(TESTS); do \
 		echo "=== $$t after mem2reg + $(PASS_NAME) ==="; \
